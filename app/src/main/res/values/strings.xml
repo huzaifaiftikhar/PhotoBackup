@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Photo Backup</string>
+    <string name="button_upload">Upload</string>
+    <string name="button_download">Download</string>
+    <string name="toast_text">Photo Uploaded!</string>
+    <string name ="SERVER_ADDRESS">https://androidtest789.000webhostapp.com/</string>
+</resources>
