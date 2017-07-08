@@ -1,27 +1,21 @@
 package org.huzaifa.photobackup;
 
-import android.content.ContentValues;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.provider.MediaStore;
-import android.provider.Settings;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.StringRes;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import android.util.Base64;
 import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
@@ -33,6 +27,13 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -71,10 +72,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_upload:
                 Bitmap image = ((BitmapDrawable) uploadedImage.getDrawable()).getBitmap();
+                hideSoftKeyboard(this);
                 UploadTheImage uploadTheImage = new UploadTheImage(image,uploadedImageName.getText().toString());
                 uploadTheImage.execute();
                 break;
             case R.id.button_download:
+                DownloadTheImage downloadTheImage = new DownloadTheImage(downloadedImageName.getText().toString());
+                downloadTheImage.execute();
+                Toast.makeText(getApplicationContext(),getString(R.string.SERVER_ADDRESS) + "Uploaded Images/" + downloadedImageName.getText().toString() + ".jpg",Toast.LENGTH_LONG).show();
                 break;
         }
     }
@@ -135,11 +140,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    public class DownloadTheImage extends AsyncTask<Void,Void,Bitmap>{
+
+        String string;
+        String url;
+
+        public DownloadTheImage(String name){
+
+            this.string = name;
+            this.url = getString(R.string.SERVER_ADDRESS) + "Uploaded Images/" + string + ".jpg";
+        }
+
+        @Override
+        protected Bitmap doInBackground(Void... voids) {
+            try {
+                URLConnection urlConnection = new URL(url).openConnection();
+                urlConnection.setConnectTimeout(1000*30);
+                urlConnection.setReadTimeout(1000*30);
+
+                //return BitmapFactory.decodeStream((InputStream) urlConnection.getContent(),null,null);
+                return BitmapFactory.decodeStream((InputStream) urlConnection.getContent());
+
+            }catch (Exception ex){
+                ex.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            if (bitmap!=null){
+                downloadedImage.setImageBitmap(bitmap);
+            }else{
+                Toast.makeText(getApplicationContext(),"ERROR! Ensure the name of the photo is correct.",Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
     private HttpParams getHttpRequestParams(){
         HttpParams httpParams = new BasicHttpParams();
         HttpConnectionParams.setConnectionTimeout(httpParams,1000*30);
         HttpConnectionParams.setSoTimeout(httpParams,100*30);
         return httpParams;
+    }
+
+    public static void hideSoftKeyboard(Activity activity) {
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) activity.getSystemService(
+                        Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(
+                activity.getCurrentFocus().getWindowToken(), 0);
     }
 
 }
