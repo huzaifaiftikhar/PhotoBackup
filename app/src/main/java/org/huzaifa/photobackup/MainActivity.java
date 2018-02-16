@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         uploadedImage = (ImageView) findViewById(R.id.uploaded_Image);
         downloadedImage = (ImageView) findViewById(R.id.downloaded_image);
         uploadedImage.setImageResource(R.drawable.default_upload_image);
+        downloadedImage.setImageResource(R.drawable.default_downloaded_image);
 
         bDownload = (Button) findViewById(R.id.button_download);
         bUpload = (Button) findViewById(R.id.button_upload);
